@@ -25,6 +25,7 @@ import {
   FormMessage,
 } from "./ui/form";
 import FormAlert from "./FormAlert";
+import JsonViewer from "./JsonViewer";
 
 const formSchema = z.object({
   questionText: z.string().min(1, { message: "Question text is required" }),
@@ -40,9 +41,11 @@ interface QuestionFormProps {
 }
 
 const QuestionForm: React.FC<QuestionFormProps> = ({
-  webhookUrl = "https://n8n.republicofengineers.com/webhook-test/recv_words", // Default webhook URL
+  webhookUrl = "https://n8n.republicofengineers.com/webhook/recv_words", // Default webhook URL
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+  const [responseData, setResponseData] = useState<any>(null);
   const [alertInfo, setAlertInfo] = useState({
     visible: false,
     type: "success" as "success" | "error",
@@ -60,6 +63,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
+    setResponseData(null);
+
     try {
       const response = await fetch(webhookUrl, {
         method: "POST",
@@ -80,7 +85,24 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
         message: "Your question has been submitted successfully.",
       });
 
-      form.reset();
+      // Start waiting for the AI response
+      setIsWaitingForResponse(true);
+
+      try {
+        // Parse the JSON response
+        const responseJson = await response.json();
+        setResponseData(responseJson);
+      } catch (parseError) {
+        console.error("Error parsing response:", parseError);
+        setAlertInfo({
+          visible: true,
+          type: "error",
+          title: "Response Error",
+          message: "Could not parse the response from the server.",
+        });
+      } finally {
+        setIsWaitingForResponse(false);
+      }
     } catch (error) {
       console.error("Error submitting form:", error);
       setAlertInfo({
@@ -100,7 +122,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md border border-gray-200">
+    <div className="w-full max-w-xl mx-auto p-6 bg-white rounded-lg shadow-md border border-gray-200">
       <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
         Submit Your Question
       </h2>
@@ -165,11 +187,20 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isSubmitting || isWaitingForResponse}
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Submitting...
+              </>
+            ) : isWaitingForResponse ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Waiting for response...
               </>
             ) : (
               "Submit Question"
@@ -177,6 +208,25 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
           </Button>
         </form>
       </Form>
+
+      {/* Response JSON Viewer */}
+      {(responseData || isWaitingForResponse) && (
+        <div className="mt-8">
+          <h3 className="text-lg font-medium mb-3 text-gray-800">
+            AI Response
+          </h3>
+          {isWaitingForResponse ? (
+            <div className="bg-gray-50 rounded-md border border-gray-200 p-8 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-3 text-gray-600">
+                Waiting for AI response...
+              </span>
+            </div>
+          ) : (
+            <JsonViewer data={responseData} title="Response Data" />
+          )}
+        </div>
+      )}
     </div>
   );
 };

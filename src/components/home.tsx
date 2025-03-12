@@ -11,12 +11,12 @@ const Home: React.FC = () => {
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Submit your questions in any language. Select the appropriate
-            question type and we'll get back to you as soon as possible.
+            question type and view the AI response immediately below.
           </p>
         </div>
 
         <div className="flex justify-center">
-          <QuestionForm webhookUrl="https://n8n.republicofengineers.com/webhook-test/recv_words" />
+          <QuestionForm webhookUrl="https://n8n.republicofengineers.com/webhook/recv_words" />
         </div>
 
         <div className="mt-12 text-center text-sm text-gray-500">
