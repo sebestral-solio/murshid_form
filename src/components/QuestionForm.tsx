@@ -248,7 +248,11 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
               </span>
             </div>
           ) : (
-            <JsonViewer data={responseData} title="Response Data" />
+            <JsonViewer
+              data={responseData}
+              title="Response Data"
+              stripWrapper={true}
+            />
           )}
         </div>
       )}

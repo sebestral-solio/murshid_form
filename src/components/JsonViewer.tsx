@@ -5,16 +5,30 @@ import { Button } from "./ui/button";
 interface JsonViewerProps {
   data: any;
   title?: string;
+  stripWrapper?: boolean;
 }
 
 const JsonViewer: React.FC<JsonViewerProps> = ({
   data = {},
   title = "Response Data",
+  stripWrapper = true,
 }) => {
   const [copied, setCopied] = React.useState(false);
 
+  // Extract the data from the wrapper if it exists and stripWrapper is true
+  const processedData = React.useMemo(() => {
+    if (!stripWrapper) return data;
+
+    // Check if data has only one top-level key
+    const keys = Object.keys(data);
+    if (keys.length === 1 && typeof data[keys[0]] === "object") {
+      return data[keys[0]];
+    }
+    return data;
+  }, [data, stripWrapper]);
+
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    navigator.clipboard.writeText(JSON.stringify(processedData, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -35,7 +49,7 @@ const JsonViewer: React.FC<JsonViewerProps> = ({
       </div>
       <pre className="p-4 overflow-auto max-h-[400px] text-sm bg-white rounded-b-md">
         <code className="text-gray-800 font-mono">
-          {JSON.stringify(data, null, 2)}
+          {JSON.stringify(processedData, null, 2)}
         </code>
       </pre>
     </div>
