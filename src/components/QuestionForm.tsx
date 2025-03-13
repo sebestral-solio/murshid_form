@@ -29,9 +29,20 @@ import JsonViewer from "./JsonViewer";
 
 const formSchema = z.object({
   questionText: z.string().min(1, { message: "Question text is required" }),
-  questionType: z.enum(["General", "Technical", "Creative"], {
-    required_error: "Please select a question type",
-  }),
+  questionType: z.enum(
+    [
+      "General",
+      "Technical",
+      "Creative",
+      "fillInBlanks(hide_text: true)",
+      "fillInBlanks(hide_text: false)",
+      "matchTheFollowing10",
+      "multipleChoice",
+    ],
+    {
+      required_error: "Please select a question type",
+    },
+  ),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -174,9 +185,23 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="General">General</SelectItem>
-                    <SelectItem value="Technical">Technical</SelectItem>
-                    <SelectItem value="Creative">Creative</SelectItem>
+                    <SelectItem value="fillInBlanks(hide_text: true)">
+                      fillInBlanks(hide_text: true)
+                    </SelectItem>
+                    <SelectItem value="fillInBlanks(hide_text: false)">
+                      fillInBlanks(hide_text: false)
+                    </SelectItem>
+                    <SelectItem value="matchTheFollowing10">
+                      {" "}
+                      matchTheFollowing
+                    </SelectItem>
+                    <SelectItem value="multipleChoice">
+                      multipleChoice
+                    </SelectItem>
+                    <SelectItem value="multiSelect">multiSelect</SelectItem>
+                    <SelectItem value="reordering">reordering</SelectItem>
+                    <SelectItem value="sorting">sorting</SelectItem>
+                    <SelectItem value="trueFalse">trueFalse</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormDescription>
